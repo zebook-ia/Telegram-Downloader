@@ -1,311 +1,353 @@
+# 📱 Telegram Media Downloader
 
-# Telegram Media Downloader
+<div align="center">
 
-Uma ferramenta automatizada para download organizado de mídias e arquivos do Telegram utilizando a MTProto API através da biblioteca Telethon.
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![Telethon](https://img.shields.io/badge/Telethon-Latest-green.svg)](https://docs.telethon.dev)
+[![License](https://img.shields.io/badge/License-Educational-yellow.svg)](#-licença)
+[![Status](https://img.shields.io/badge/Status-MVP%20v1.0-brightgreen.svg)](#-funcionalidades)
 
-## 🎯 Funcionalidades
+**Ferramenta automatizada para download organizado de mídias do Telegram**  
+*Utilizando MTProto API através da biblioteca Telethon*
 
-### ✅ MVP - Implementadas
-- **🔐 Login via QR Code**: Autenticação segura sem necessidade de número de telefone
-- **📋 Exportação de Lista de Chats**: Lista completa de chats, grupos e canais em JSON
-- **📥 Download Organizado**: Estrutura automática de diretórios por tipo de mídia
-- **📁 Suporte a Grupos com Tópicos**: Organização específica para grupos forum
-- **🔒 Acesso a Chats Privados**: Múltiplas tentativas de acesso com fallbacks
-- **📊 Logs Detalhados**: Registro completo de operações e progresso visual
+[🚀 Instalação Rápida](#-instalação-rápida) • [📖 Guia de Uso](#-guia-de-uso) • [🔧 Configuração](#-configuração) • [🐛 Problemas?](#-solução-de-problemas)
 
-### 🚀 Características Técnicas
-- Suporte à autenticação 2FA
-- Renovação automática de QR Code expirado
-- Sessão persistente entre execuções
-- Tratamento robusto de erros
-- Barra de progresso visual com tqdm
-- Nomenclatura cronológica de arquivos
-- Sanitização automática de nomes
+</div>
 
-## 📁 Estrutura de Saída
+---
 
-```
-exports/
-├── chat_list.json                    # Lista de todos os chats
-└── {ChatName}_{ChatID}/
-    ├── fotos/                        # Imagens (.jpg)
-    ├── videos/                       # Vídeos (.mp4)
-    ├── documentos/                   # Documentos diversos
-    ├── audio/                        # Arquivos de áudio (.mp3)
-    ├── mensagens_voz/               # Mensagens de voz (.ogg)
-    ├── stickers/                    # Stickers (.webp)
-    ├── outros/                      # Outros tipos de mídia
-    ├── download_log.txt             # Log detalhado de downloads
-    └── [PARA GRUPOS COM TÓPICOS]
-        ├── {TopicName1}/
-        │   ├── fotos/
-        │   ├── videos/
-        │   └── [outros tipos]/
-        └── {TopicName2}/
-            ├── fotos/
-            ├── videos/
-            └── [outros tipos]/
-```
+## 🎯 Por que usar?
 
-## 🛠️ Instalação
+> **Backup completo e organizado das suas conversas do Telegram de forma automatizada**
+
+- 🔐 **Login seguro** via QR Code (sem compartilhar número)
+- 📁 **Organização automática** por tipo de mídia e tópicos
+- 🚀 **Interface intuitiva** com progresso visual
+- 📊 **Logs detalhados** de todo o processo
+- 🔒 **Acesso inteligente** a chats privados com fallbacks
+
+## ✨ Funcionalidades
+
+<table>
+<tr>
+<td width="50%">
+
+### 🔥 Recursos Principais
+- [x] Login via QR Code
+- [x] Exportação de lista de chats
+- [x] Download organizado por categoria
+- [x] Suporte a grupos com tópicos
+- [x] Múltiplas tentativas de acesso
+- [x] Logs e progresso visual
+
+</td>
+<td width="50%">
+
+### 🛠️ Tecnologias
+- [x] Autenticação 2FA
+- [x] Sessão persistente
+- [x] Tratamento robusto de erros
+- [x] Nomenclatura cronológica
+- [x] Sanitização automática
+- [x] Barra de progresso (tqdm)
+
+</td>
+</tr>
+</table>
+
+## 🚀 Instalação Rápida
 
 ### Pré-requisitos
-- Python 3.8 ou superior
-- Conta no Telegram
-- API credentials do Telegram
-
-### 1. Clone ou baixe o projeto
 ```bash
-# Se usando git
-git clone <repository-url>
-cd telegram-media-downloader
-
-# Ou baixe e extraia os arquivos
+Python 3.8+ • Conta Telegram • API Credentials
 ```
 
-### 2. Instale as dependências
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Configure as credenciais da API
+### 1️⃣ Obter credenciais API
+<details>
+<summary>📝 <strong>Clique para ver o passo a passo</strong></summary>
 
 1. Acesse [my.telegram.org/apps](https://my.telegram.org/apps)
 2. Faça login com seu número do Telegram
-3. Vá em "API Development Tools"
+3. Vá em **"API Development Tools"**
 4. Crie uma nova aplicação
 5. Anote seu `api_id` e `api_hash`
 
-6. Edite o arquivo `config.py`:
-```python
-# Substitua pelos seus valores reais
-API_ID = 12345  # Seu API ID aqui
-API_HASH = 'sua_api_hash_aqui'  # Seu API Hash aqui
+</details>
+
+### 2️⃣ Configurar projeto
+```bash
+# Clonar repositório
+git clone <repository-url>
+cd telegram-media-downloader
+
+# Instalar dependências
+pip install -r requirements.txt
+
+# Configurar credenciais
+# Edite config.py com seus valores:
+API_ID = 12345  # Seu API ID
+API_HASH = 'sua_api_hash_aqui'  # Seu API Hash
 ```
 
-## 🚀 Uso
-
-### Execução Básica
+### 3️⃣ Executar
 ```bash
 python telegram_downloader.py
 ```
 
-### Fluxo de Uso
+## 📖 Guia de Uso
 
-1. **🔐 Autenticação**: 
-   - Execute o script
-   - Escaneie o QR Code com seu Telegram
-   - Digite senha 2FA se solicitado
+### 🔄 Fluxo Completo
 
-2. **📋 Lista de Chats**:
-   - O app exporta automaticamente todos os chats acessíveis
-   - Salva em `exports/chat_list.json`
-
-3. **🎯 Seleção de Chats**:
-   - 📋 Seleção interativa da lista de chats
-   - 🆔 Inserção direta de IDs específicos
-   - 🔗 Inserção de links do Telegram
-   - 🚀 Modo automático (primeiros 5 chats)
-
-### Formatos de Input Suportados
-
-**Por ID do Chat:**
-```
-123456789                    # ID único
-123456789,987654321         # Múltiplos IDs
+```mermaid
+graph LR
+    A[Executar Script] --> B[Escanear QR Code]
+    B --> C[Lista de Chats]
+    C --> D[Selecionar Chats]
+    D --> E[Download Automático]
+    E --> F[Arquivos Organizados]
 ```
 
-**Por Link/Username:**
+### 📱 Métodos de Seleção
+
+<table>
+<tr>
+<th>Método</th>
+<th>Exemplo</th>
+<th>Descrição</th>
+</tr>
+<tr>
+<td>🆔 Por ID</td>
+<td><code>123456789</code></td>
+<td>ID único do chat</td>
+</tr>
+<tr>
+<td>🔗 Por Link</td>
+<td><code>https://t.me/username</code></td>
+<td>Link público ou privado</td>
+</tr>
+<tr>
+<td>@ Username</td>
+<td><code>@username</code></td>
+<td>Username com ou sem @</td>
+</tr>
+<tr>
+<td>📋 Da Lista</td>
+<td><code>1,3-5,8</code></td>
+<td>Seleção múltipla da lista</td>
+</tr>
+</table>
+
+### 📁 Estrutura de Saída
+
 ```
-https://t.me/username       # Link público
-https://t.me/c/1234/1      # Link privado
-@username                   # Username direto
-username                    # Username sem @
-```
-
-**Seleção da Lista:**
-```
-1                          # Chat único
-1,3,5                     # Múltiplos chats
-1-5                       # Intervalo
-1,3-5,8                   # Combinado
-```odifique a lógica em `interactive_chat_selection()` conforme necessário
-
-4. **📥 Download**:
-   - Download automático com organização por tipo
-   - Progresso visual em tempo real
-   - Logs detalhados salvos automaticamente
-
-### Exemplo de Saída
-```
-╔══════════════════════════════════════════════════════════════╗
-║                  TELEGRAM MEDIA DOWNLOADER                  ║
-║                         MVP v1.0                            ║
-╠══════════════════════════════════════════════════════════════╣
-║  📱 Login via QR Code                                        ║
-║  📋 Export Chat Lists                                        ║
-║  📥 Organized Media Downloads                                ║
-║  📁 Forum Topics Support                                     ║
-║  🔒 Private Chats Access                                     ║
-╚══════════════════════════════════════════════════════════════╝
-
-🔐 ETAPA 1: AUTENTICAÇÃO
-=== INICIANDO LOGIN VIA QR CODE ===
-📱 Escaneie o QR Code com seu Telegram...
-✅ Login realizado com sucesso!
-
-📋 ETAPA 2: EXPORTAÇÃO DA LISTA DE CHATS
-✅ Lista de 25 chats exportada para 'exports/chat_list.json'
-
-📋 RESUMO DOS CHATS ENCONTRADOS (25 total):
-📂 Channel: 8 chats
-📂 Chat: 12 chats  
-📂 User: 5 chats
-
-📥 ETAPA 4: DOWNLOAD DE MÍDIAS
-📱 Processando chat 1/5: Meu Grupo Favorito
-📁 Detectado grupo forum - obtendo tópicos...
-📁 Encontrados 3 tópicos no grupo forum
-📥 Baixando: [Tópico Geral]_20240115_143022_msg12345.jpg
-📥 Baixando: [Discussões]_20240115_143055_msg12347.mp4
-
-✅ Download concluído!
-📊 Estatísticas:
-   - Mensagens processadas: 150
-   - Arquivos baixados: 45
-📁 Downloads por tópico:
-   - Tópico Geral: 25 arquivos
-   - Discussões: 20 arquivos
+exports/
+├── 📋 chat_list.json                    # Lista completa de chats
+└── 📁 {ChatName}_{ChatID}/
+    ├── 📸 fotos/                        # Imagens (.jpg, .png)
+    ├── 🎥 videos/                       # Vídeos (.mp4, .avi)
+    ├── 📄 documentos/                   # PDFs, documentos
+    ├── 🎵 audio/                        # Músicas (.mp3)
+    ├── 🎤 mensagens_voz/               # Voice messages (.ogg)
+    ├── 😊 stickers/                    # Stickers (.webp)
+    ├── 📦 outros/                      # Outros tipos
+    ├── 📊 download_log.txt             # Log detalhado
+    └── 🗂️ [GRUPOS COM TÓPICOS]/
+        ├── TopicName1/
+        └── TopicName2/
 ```
 
-## ⚙️ Configuração Avançada
+## 🔧 Configuração
 
-### Arquivo `config.py`
+### ⚙️ Arquivo `config.py`
 
 ```python
-# Limites e configurações
+# 📊 Limites e Performance
 DEFAULT_LIMIT_PER_CHAT = 1000        # Mensagens por chat
-MAX_FILE_SIZE = 1024 * 1024 * 1024   # 1GB limite de arquivo
+MAX_FILE_SIZE = 1024 * 1024 * 1024   # Limite: 1GB por arquivo
 CONCURRENT_DOWNLOADS = 1              # Downloads simultâneos
 
-# Tipos de mídia suportados
+# 📱 Tipos de mídia suportados
 SUPPORTED_MEDIA_TYPES = [
     'photo', 'video', 'document', 'audio', 'voice', 'sticker'
 ]
 ```
 
-### Personalização
+### 🎨 Personalização
 
-- **Limite de mensagens**: Modifique `DEFAULT_LIMIT_PER_CHAT` em `config.py`
-- **Seleção de chats**: Edite `interactive_chat_selection()` em `telegram_downloader.py`
-- **Filtros**: Implemente filtros adicionais em `telethon_handlers.py`
-- **Estrutura de diretórios**: Modifique `MEDIA_DIRECTORIES` em `config.py`
+<details>
+<summary><strong>🔧 Opções Avançadas</strong></summary>
 
-## 🔧 Estrutura do Código
+| Configuração | Arquivo | Função |
+|-------------|---------|---------|
+| **Limite de mensagens** | `config.py` | `DEFAULT_LIMIT_PER_CHAT` |
+| **Seleção de chats** | `telegram_downloader.py` | `interactive_chat_selection()` |
+| **Filtros personalizados** | `telethon_handlers.py` | Adicionar filtros |
+| **Estrutura de pastas** | `config.py` | `MEDIA_DIRECTORIES` |
 
+</details>
+
+## 📊 Exemplo de Execução
+
+```bash
+╔══════════════════════════════════════════════════════════════╗
+║                  TELEGRAM MEDIA DOWNLOADER                  ║
+║                         MVP v1.0                            ║
+╠══════════════════════════════════════════════════════════════╣
+║  📱 Login via QR Code          📋 Export Chat Lists         ║
+║  📥 Organized Downloads        📁 Forum Topics Support      ║
+║  🔒 Private Chats Access       📊 Detailed Logging          ║
+╚══════════════════════════════════════════════════════════════╝
+
+🔐 ETAPA 1: AUTENTICAÇÃO
+📱 Escaneie o QR Code com seu Telegram...
+✅ Login realizado com sucesso!
+
+📋 ETAPA 2: EXPORTAÇÃO (25 chats encontrados)
+📊 Canais: 8 • Grupos: 12 • Privados: 5
+
+📥 ETAPA 3: DOWNLOAD
+📱 Processando: Meu Grupo Favorito (1/5)
+📁 Forum detectado - 3 tópicos encontrados
+📥 [████████████████████] 45/45 arquivos
+
+✅ CONCLUÍDO!
+📊 Estatísticas finais:
+   • 150 mensagens processadas
+   • 45 arquivos baixados
+   • 3 tópicos organizados
 ```
-telegram-media-downloader/
-├── config.py                 # Configurações e credenciais
-├── file_utils.py             # Utilitários de arquivo e diretório
-├── telethon_handlers.py      # Funcionalidades core do Telethon
-├── telegram_downloader.py    # Script principal
-├── requirements.txt          # Dependências Python
-└── README.md                # Este arquivo
-```
 
-### Módulos
+## 🛡️ Segurança & Limitações
 
-- **`config.py`**: Configurações centralizadas da aplicação
-- **`file_utils.py`**: Funções para manipulação de arquivos, sanitização e organização
-- **`telethon_handlers.py`**: Toda a lógica específica do Telethon (auth, downloads, tópicos)
-- **`telegram_downloader.py`**: Orchestrador principal e interface do usuário
+### ✅ Boas Práticas Implementadas
 
-## 🛡️ Segurança e Limitações
+- 🔒 **Segurança**: Apenas chats acessíveis ao usuário
+- 🔐 **Privacidade**: Sessões criptografadas localmente
+- ⚡ **Rate Limiting**: Respeita limites do Telegram
+- 🛠️ **Robustez**: Tratamento completo de erros
 
-### Boas Práticas
-- ✅ Apenas downloads de chats acessíveis ao usuário
-- ✅ Não armazenamento de credenciais sensíveis
-- ✅ Sessões criptografadas localmente
-- ✅ Rate limiting automático
-- ✅ Tratamento de erros robusto
+### ⚠️ Limitações Conhecidas
 
-### Limitações Conhecidas
-- Rate limits do Telegram podem causar delays
-- Arquivos muito grandes podem demorar
-- Alguns chats privados podem negar acesso
-- Requer espaço em disco adequado
-
-### Tratamento de Erros Comuns
-- **FloodWaitError**: Aguarda automaticamente o tempo especificado
-- **ChatAdminRequiredError**: Pula chats sem permissão
-- **ChannelPrivateError**: Tenta múltiplos métodos de acesso
+| Limitação | Impacto | Solução |
+|-----------|---------|---------|
+| Rate limits do Telegram | Delays automáticos | Aguarda tempo especificado |
+| Arquivos muito grandes | Download lento | Configurable em `MAX_FILE_SIZE` |
+| Chats privados restritos | Alguns inacessíveis | Múltiplas tentativas automáticas |
+| Espaço em disco | Pode esgotar | Monitore espaço disponível |
 
 ## 🐛 Solução de Problemas
 
-### Problemas Comuns
+<details>
+<summary><strong>❌ Erro de autenticação</strong></summary>
 
-**❌ Erro de autenticação**
-```
-Solução: Verifique API_ID e API_HASH em config.py
-```
+**Problema**: `AuthKeyError` ou `ApiIdInvalidError`
 
-**❌ QR Code não aparece**
+**Solução**:
+```python
+# Verifique config.py
+API_ID = 12345  # Deve ser um número
+API_HASH = 'hash_correto'  # String válida do Telegram
 ```
-Solução: Instale a biblioteca qrcode:
+</details>
+
+<details>
+<summary><strong>❌ QR Code não aparece</strong></summary>
+
+**Problema**: Terminal não exibe QR Code
+
+**Solução**:
+```bash
 pip install qrcode[pil]
+# Ou usar terminal com suporte Unicode
+```
+</details>
+
+<details>
+<summary><strong>❌ Sem permissão para chat</strong></summary>
+
+**Problema**: `ChatAdminRequiredError`
+
+**Solução**: Normal - app continua automaticamente com próximos chats
+</details>
+
+<details>
+<summary><strong>❌ Erro de memória</strong></summary>
+
+**Problema**: `MemoryError` com muitos arquivos
+
+**Solução**:
+```python
+# Reduza em config.py
+DEFAULT_LIMIT_PER_CHAT = 100  # Valor menor
+```
+</details>
+
+### 📋 Logs e Debug
+
+- 📊 **Logs detalhados**: `exports/{chat}/download_log.txt`
+- 🎨 **Erros coloridos**: Terminal com códigos de cor
+- 🔍 **Debug personalizado**: Adicione `print()` conforme necessário
+
+## 🗂️ Estrutura do Projeto
+
+```
+telegram-media-downloader/
+├── 📄 README.md                 # Esta documentação
+├── ⚙️ config.py                 # Configurações centrais
+├── 🔧 file_utils.py             # Utilitários de arquivo
+├── 📡 telethon_handlers.py      # Core Telethon
+├── 🚀 telegram_downloader.py    # Script principal
+└── 📦 requirements.txt          # Dependências
 ```
 
-**❌ Sem permissão para chat**
-```
-Solução: Normal - alguns chats podem negar acesso
-O app continua com os próximos automaticamente
-```
+## 🚀 Roadmap
 
-**❌ Erro de memória**
-```
-Solução: Reduza DEFAULT_LIMIT_PER_CHAT em config.py
-```
+### 📅 Fase 2 - Recursos Avançados
+- [ ] 📅 Filtros por data e tamanho
+- [ ] 🖥️ Interface gráfica opcional  
+- [ ] 🔄 Sincronização incremental
+- [ ] ☁️ Backup em nuvem
+- [ ] 👤 Filtros por usuário
 
-### Logs e Debug
-
-- Logs detalhados são salvos em `exports/{chat}/download_log.txt`
-- Erros são exibidos no terminal com códigos de cor
-- Use `print()` adicional para debug se necessário
-
-## 📈 Roadmap Futuro
-
-### Fase 2 - Recursos Avançados
-- [ ] Filtros por data e tamanho de arquivo
-- [ ] Interface gráfica opcional
-- [ ] Sincronização incremental
-- [ ] Backup em nuvem
-- [ ] Filtros por usuário específico
-
-### Fase 3 - Otimizações
-- [ ] Downloads paralelos seguros
-- [ ] Compressão automática
-- [ ] Retomada de downloads interrompidos
-- [ ] Dashboard web de progresso
+### 📅 Fase 3 - Performance
+- [ ] ⚡ Downloads paralelos seguros
+- [ ] 📦 Compressão automática
+- [ ] ▶️ Retomada de downloads
+- [ ] 📊 Dashboard web
 
 ## 📄 Licença
 
-Este projeto é fornecido "como está" para fins educacionais e de backup pessoal. Use responsavelmente e respeite os termos de uso do Telegram.
+<div align="center">
 
-## 🤝 Contribuições
+**Projeto educacional fornecido "como está"**  
+*Use responsavelmente e respeite os termos do Telegram*
 
-Contribuições são bem-vindas! Sinta-se à vontade para:
-- Reportar bugs
-- Sugerir funcionalidades
-- Enviar pull requests
-- Melhorar a documentação
+</div>
+
+## 🤝 Contribuindo
+
+Contribuições são muito bem-vindas! 
+
+- 🐛 **Reportar bugs** via Issues
+- 💡 **Sugerir features** via Discussions  
+- 🔧 **Pull requests** sempre aceitos
+- 📖 **Melhorar docs** é sempre útil
 
 ## ⚠️ Aviso Legal
 
-- Use apenas para backup de suas próprias conversas
-- Respeite a privacidade de outros usuários  
-- Não redistribua conteúdo de terceiros
-- Siga os termos de uso do Telegram
+> **⚖️ Use apenas para backup pessoal**
+> - ✅ Suas próprias conversas
+> - ❌ Não redistribua conteúdo de terceiros
+> - 📜 Respeite termos de uso do Telegram
+> - 🔒 Mantenha privacidade de outros usuários
 
 ---
 
-**Telegram Media Downloader v1.0 MVP** - Desenvolvido com ❤️ para a comunidade
+<div align="center">
+
+**📱 Telegram Media Downloader v1.0**  
+*Desenvolvido com ❤️ para a comunidade*
+
+[⬆️ Voltar ao topo](#-telegram-media-downloader)
+
+</div>
