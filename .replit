@@ -1,3 +1,4 @@
+modules = ["python-3.11"]
 [nix]
 channel = "stable-24_05"
 
@@ -11,4 +12,13 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python telegram_downloader.py"
+args = "python3 telegram_downloader.py"
+
+[[workflows.workflow]]
+name = "Test Setup"
+author = 42610829
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 test_setup.py"
