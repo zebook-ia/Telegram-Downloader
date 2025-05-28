@@ -1,0 +1,88 @@
+**Objetivo do Projeto:**
+Você deve criar o código Python para um aplicativo chamado "Telegram Media Downloader". O objetivo principal é desenvolver uma ferramenta automatizada para download organizado de mídias e arquivos do Telegram. A ferramenta utilizará a MTProto API do Telegram através da biblioteca Telethon, com suporte a login via QR Code, acesso a chats privados, e organização de mídias de grupos com tópicos (fóruns) e chats normais.
+
+**Documentos de Referência Fundamentais (você deve ter acesso e analisar estes arquivos):**
+1.  `PRD.md`: Contém os requisitos do produto, funcionalidades, arquitetura, roadmap e critérios de aceitação.
+2.  `telegram-telethon-doc.md`: Fornece exemplos de código e documentação detalhada sobre como usar a Telethon para as funcionalidades chave (login QR, listagem de chats, download de mídia, tópicos).
+3.  `fluxo-ux.md`: Descreve o fluxo de interação do usuário com o aplicativo.
+4.  `prisma-scheme.md`: (Para referência futura ou se optar por uma solução com banco de dados, mas o MVP do PRD foca em logs e arquivos de sessão locais).
+
+**Tecnologias Principais a Utilizar (conforme PRD e telegram-telethon-doc.md):**
+* **Linguagem:** Python 3.8+
+* **API:** Telegram MTProto via biblioteca Telethon
+* **Dependências Python:**
+    * `telethon` (para interação com a API do Telegram)
+    * `tqdm` (para barras de progresso visuais)
+    * `qrcode` (para geração de QR Code para login)
+    * `asyncio` (para programação assíncrona, utilizada pela Telethon)
+
+**Estrutura do Código Sugerida:**
+Crie um projeto modular. Considere uma estrutura como:
+* `telegram_downloader.py`: Script principal com a função `main()` que orquestra o fluxo.
+* `telethon_handlers.py` (ou similar): Módulo com funções específicas da Telethon (login, listagem de chats, download de mídia, manipulação de tópicos).
+* `file_utils.py` (ou similar): Funções utilitárias para manipulação de arquivos e diretórios (sanitização de nomes, criação de pastas).
+* `config.py`: Para armazenar API_ID, API_HASH e outras configurações (o usuário irá preencher API_ID e API_HASH).
+
+**Implementação Faseada (seguir o Roadmap do PRD.md):**
+
+**Fase 1: Core MVP (Prioridade Máxima)**
+1.  **F1: Login via QR Code:**
+    * Implemente a função `login_with_qr()` conforme descrito em `telegram-telethon-doc.md`.
+    * Deve gerar o QR Code no terminal.
+    * Deve suportar autenticação 2FA (a Telethon lida com isso, mas o prompt de senha deve ser tratado).
+    * Deve renovar automaticamente o QR Code expirado.
+    * Deve manter a sessão ativa entre execuções (Telethon cria um arquivo `.session`).
+2.  **F3: Exportação de Lista de Chats (Parcial - Listagem Básica):**
+    * Implemente a função `export_chat_list()` conforme `telegram-telethon-doc.md`.
+    * Deve listar todos os chats acessíveis.
+    * Para o MVP, foque em obter ID, título e tipo. O salvamento em JSON pode ser adicionado depois ou como parte desta fase.
+3.  **F5: Download Organizado de Mídias (Estrutura Básica):**
+    * Implemente a lógica central de `export_media_organized()` de `telegram-telethon-doc.md`.
+    * Crie a estrutura de diretórios automática: `exports/{chat_name}_{chat_id}/{tipo_midia}/` (fotos, videos, documentos, audio, mensagens_voz, stickers, outros).
+    * Use `sanitize_filename()` para nomes de chat e arquivos.
+    * Nomenclatura cronológica com timestamp: `{timestamp}_msg{message.id}{extension}`.
+    * Suporte aos principais tipos de mídia do Telegram.
+    * Crie um log básico de operações (`download_log.txt` dentro de cada pasta de chat).
+
+**Fase 2: Recursos Avançados (Implementar após MVP funcional)**
+1.  **F4 & F6: Suporte a Grupos com Tópicos:**
+    * Implemente `get_forum_topics()` de `telegram-telethon-doc.md`.
+    * Adapte `export_media_organized()` para detectar grupos fórum.
+    * Crie subdiretórios para cada tópico: `exports/{chat_name}_{chat_id}/{topic_name}/{tipo_midia}/`.
+    * Identifique o tópico de origem de cada mídia (usando `message.reply_to.reply_to_top_id` como em `telegram-telethon-doc.md`).
+    * Prefixe o nome do arquivo com o nome do tópico sanitizado: `[{topic_name}]_{timestamp}_msg{message.id}{extension}`.
+    * Atualize o `download_log.txt` para incluir o nome do tópico.
+2.  **F2: Acesso a Chats Privados:**
+    * Assegure que `client.get_entity()` possa resolver chats privados dos quais o usuário faz parte. A documentação da Telethon em `telegram-telethon-doc.md` mostra múltiplas tentativas de acesso.
+    * Implemente verificação de permissões antes do download (ex: tentar ler uma mensagem).
+3.  **F3: Exportação de Lista de Chats (Completo):**
+    * Salve a lista completa de chats em formato JSON estruturado (`chat_list.json`) conforme especificado em `PRD.md` (Chat Information Schema) e `telegram-telethon-doc.md`.
+4.  **F7: Filtros de Download:**
+    * Permita filtrar por data (período específico) usando `offset_date` e `reverse` em `iter_messages`.
+    * Filtro por tipo de mídia (selecionar quais tipos baixar).
+    * (Opcional para esta fase, pode ser F3) Filtro por tamanho de arquivo, filtro por tópico específico.
+5.  **F8: Controle de Progresso:**
+    * Use `tqdm` para barras de progresso visuais durante a listagem de mensagens e download.
+    * Exiba contador de arquivos processados e relatório final.
+
+**Requisitos Gerais e Boas Práticas:**
+* **Fluxo de UX:** Siga a lógica apresentada em `fluxo-ux.md`.
+* **Tratamento de Erros (UX2):** Implemente tratamento de exceções robusto (ex: `FloodWaitError`, erros de acesso, falhas de download). Forneça mensagens de erro claras.
+* **Segurança (S1, S2, S3):**
+    * Não armazene credenciais sensíveis (além do arquivo de sessão da Telethon).
+    * Implemente delays razoáveis para evitar rate limiting, e trate `FloodWaitError` adequadamente.
+* **Performance (P1, P2, P3):**
+    * Downloads devem ser eficientes.
+    * Gerenciamento de memória para arquivos grandes.
+* **Configurabilidade (UX3):**
+    * API ID/Hash e diretório de destino devem ser configuráveis (via `config.py`).
+* **Código:**
+    * Escreva código Python limpo, bem comentado e modular.
+    * Use `async/await` para todas as operações da Telethon.
+    * Siga as convenções PEP 8.
+    * Inclua docstrings nas funções principais.
+
+**Entregável Esperado:**
+Um conjunto de arquivos Python que implementam as funcionalidades descritas, com foco inicial no MVP e depois nos recursos avançados. O aplicativo deve ser executável a partir da linha de comando.
+
+Por favor, comece pela Fase 1 (Core MVP) e, após garantir sua funcionalidade, prossiga para a Fase 2. Refira-se constantemente aos documentos fornecidos, especialmente `PRD.md` para os "o quês" e `telegram-telethon-doc.md` para os "comos".
