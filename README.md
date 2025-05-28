@@ -102,8 +102,34 @@ python telegram_downloader.py
    - Salva em `exports/chat_list.json`
 
 3. **🎯 Seleção de Chats**:
-   - Por padrão, processa os primeiros 5 chats
-   - Modifique a lógica em `interactive_chat_selection()` conforme necessário
+   - 📋 Seleção interativa da lista de chats
+   - 🆔 Inserção direta de IDs específicos
+   - 🔗 Inserção de links do Telegram
+   - 🚀 Modo automático (primeiros 5 chats)
+
+### Formatos de Input Suportados
+
+**Por ID do Chat:**
+```
+123456789                    # ID único
+123456789,987654321         # Múltiplos IDs
+```
+
+**Por Link/Username:**
+```
+https://t.me/username       # Link público
+https://t.me/c/1234/1      # Link privado
+@username                   # Username direto
+username                    # Username sem @
+```
+
+**Seleção da Lista:**
+```
+1                          # Chat único
+1,3,5                     # Múltiplos chats
+1-5                       # Intervalo
+1,3-5,8                   # Combinado
+```odifique a lógica em `interactive_chat_selection()` conforme necessário
 
 4. **📥 Download**:
    - Download automático com organização por tipo

@@ -112,7 +112,6 @@ def display_chat_summary(chat_list: List[Dict]) -> None:
 async def interactive_chat_selection(chat_list: List[Dict]) -> List[Dict]:
     """
     Allow user to interactively select which chats to process
-    For MVP, we'll process a limited number automatically
     
     Args:
         chat_list: List of all available chats
@@ -121,18 +120,223 @@ async def interactive_chat_selection(chat_list: List[Dict]) -> List[Dict]:
         List of selected chats to process
     """
     print(f"\n🎯 SELEÇÃO DE CHATS PARA DOWNLOAD")
-    print("Para este MVP, vamos processar os primeiros 5 chats automaticamente.")
-    print("Você pode modificar esta lógica no código conforme necessário.")
+    print("Escolha uma das opções:")
+    print("1. 📋 Selecionar da lista de chats")
+    print("2. 🆔 Inserir ID específico do chat")
+    print("3. 🔗 Inserir link do chat")
+    print("4. 🚀 Processar primeiros 5 chats (modo automático)")
     
-    # For MVP, automatically select first 5 chats
+    while True:
+        choice = input("\n❓ Digite sua opção (1-4): ").strip()
+        
+        if choice == "1":
+            return await select_from_chat_list(chat_list)
+        elif choice == "2":
+            return await select_by_chat_id(chat_list)
+        elif choice == "3":
+            return await select_by_chat_link()
+        elif choice == "4":
+            return await select_auto_mode(chat_list)
+        else:
+            print("❌ Opção inválida! Digite 1, 2, 3 ou 4")
+
+
+async def select_from_chat_list(chat_list: List[Dict]) -> List[Dict]:
+    """Select chats from the exported list"""
+    print(f"\n📋 LISTA DE CHATS DISPONÍVEIS ({len(chat_list)} total):")
+    print("-" * 80)
+    
+    # Show numbered list
+    for i, chat in enumerate(chat_list, 1):
+        forum_indicator = " 📁[FORUM]" if chat.get('is_forum') else ""
+        participants = chat.get('participants_count', 0)
+        print(f"{i:3d}. {chat['title'][:60]:<60} | {chat['type']:<12} | "
+              f"ID: {chat['id']:<12} | {participants:>6} membros{forum_indicator}")
+    
+    print(f"\n💡 Exemplos de entrada:")
+    print("  - Um chat: 1")
+    print("  - Múltiplos chats: 1,3,5")
+    print("  - Intervalo: 1-5")
+    print("  - Combinado: 1,3-5,8")
+    
+    while True:
+        selection = input("\n❓ Digite os números dos chats (ou 'c' para cancelar): ").strip()
+        
+        if selection.lower() == 'c':
+            return []
+        
+        try:
+            selected_indices = parse_selection_input(selection, len(chat_list))
+            selected_chats = [chat_list[i-1] for i in selected_indices]
+            
+            print(f"\n📌 Chats selecionados ({len(selected_chats)}):")
+            for chat in selected_chats:
+                forum_indicator = " 📁[FORUM]" if chat.get('is_forum') else ""
+                print(f"  - {chat['title']} (ID: {chat['id']}){forum_indicator}")
+            
+            confirmation = input("\n❓ Confirmar seleção? (s/N): ").lower().strip()
+            if confirmation in ['s', 'sim', 'y', 'yes']:
+                return selected_chats
+            else:
+                print("❌ Seleção cancelada")
+                continue
+                
+        except ValueError as e:
+            print(f"❌ Erro na seleção: {e}")
+            continue
+
+
+async def select_by_chat_id(chat_list: List[Dict]) -> List[Dict]:
+    """Select chat by specific ID"""
+    print(f"\n🆔 SELEÇÃO POR ID DO CHAT")
+    print("💡 Você pode inserir um ou múltiplos IDs separados por vírgula")
+    
+    while True:
+        ids_input = input("\n❓ Digite o(s) ID(s) do(s) chat(s) (ou 'c' para cancelar): ").strip()
+        
+        if ids_input.lower() == 'c':
+            return []
+        
+        try:
+            # Parse multiple IDs
+            chat_ids = []
+            for id_str in ids_input.split(','):
+                chat_id = int(id_str.strip())
+                chat_ids.append(chat_id)
+            
+            # Find chats by ID
+            selected_chats = []
+            for chat_id in chat_ids:
+                found_chat = None
+                for chat in chat_list:
+                    if chat['id'] == chat_id:
+                        found_chat = chat
+                        break
+                
+                if found_chat:
+                    selected_chats.append(found_chat)
+                    print(f"✅ Chat encontrado: {found_chat['title']} (ID: {found_chat['id']})")
+                else:
+                    # Create custom chat entry for unknown IDs
+                    custom_chat = {
+                        'id': chat_id,
+                        'title': f'Chat_ID_{chat_id}',
+                        'type': 'Unknown',
+                        'username': None,
+                        'participants_count': 0,
+                        'is_forum': False
+                    }
+                    selected_chats.append(custom_chat)
+                    print(f"⚠️ Chat não encontrado na lista: ID {chat_id} (tentaremos acessar)")
+            
+            if selected_chats:
+                confirmation = input(f"\n❓ Confirmar download de {len(selected_chats)} chat(s)? (s/N): ").lower().strip()
+                if confirmation in ['s', 'sim', 'y', 'yes']:
+                    return selected_chats
+                else:
+                    continue
+            else:
+                print("❌ Nenhum chat válido encontrado")
+                continue
+                
+        except ValueError:
+            print("❌ IDs inválidos! Use apenas números separados por vírgula")
+            continue
+
+
+async def select_by_chat_link() -> List[Dict]:
+    """Select chat by Telegram link"""
+    print(f"\n🔗 SELEÇÃO POR LINK DO CHAT")
+    print("💡 Formatos aceitos:")
+    print("  - https://t.me/username")
+    print("  - https://t.me/c/1234567890/1")
+    print("  - @username")
+    print("  - Múltiplos links separados por vírgula")
+    
+    while True:
+        links_input = input("\n❓ Digite o(s) link(s) ou username(s) (ou 'c' para cancelar): ").strip()
+        
+        if links_input.lower() == 'c':
+            return []
+        
+        selected_chats = []
+        
+        for link_str in links_input.split(','):
+            link = link_str.strip()
+            
+            # Parse different link formats
+            username = None
+            chat_id = None
+            
+            if link.startswith('https://t.me/c/'):
+                # Private chat link: https://t.me/c/1234567890/1
+                try:
+                    parts = link.split('/')
+                    chat_id = int(parts[4])
+                    # Convert to proper chat ID format
+                    chat_id = int(f"-100{chat_id}")
+                except:
+                    print(f"❌ Link inválido: {link}")
+                    continue
+                    
+            elif link.startswith('https://t.me/'):
+                # Public chat link: https://t.me/username
+                username = link.split('/')[-1]
+                
+            elif link.startswith('@'):
+                # Username format: @username
+                username = link[1:]
+                
+            else:
+                # Assume it's a username
+                username = link
+            
+            # Create chat entry
+            if chat_id:
+                custom_chat = {
+                    'id': chat_id,
+                    'title': f'Chat_Link_{abs(chat_id)}',
+                    'type': 'Channel',
+                    'username': None,
+                    'participants_count': 0,
+                    'is_forum': False,
+                    'access_hash': None
+                }
+            elif username:
+                custom_chat = {
+                    'id': 0,  # Will be resolved later
+                    'title': f'@{username}',
+                    'type': 'Channel',
+                    'username': username,
+                    'participants_count': 0,
+                    'is_forum': False
+                }
+            else:
+                continue
+            
+            selected_chats.append(custom_chat)
+            print(f"✅ Chat adicionado: {custom_chat['title']}")
+        
+        if selected_chats:
+            confirmation = input(f"\n❓ Confirmar download de {len(selected_chats)} chat(s)? (s/N): ").lower().strip()
+            if confirmation in ['s', 'sim', 'y', 'yes']:
+                return selected_chats
+            else:
+                continue
+        else:
+            print("❌ Nenhum chat válido encontrado")
+            continue
+
+
+async def select_auto_mode(chat_list: List[Dict]) -> List[Dict]:
+    """Auto select first 5 chats"""
     selected_chats = chat_list[:5]
     
-    print(f"\n📌 Chats selecionados para download ({len(selected_chats)}):")
+    print(f"\n📌 Modo automático - Primeiros 5 chats selecionados:")
     for i, chat in enumerate(selected_chats, 1):
         forum_indicator = " 📁[FORUM]" if chat.get('is_forum') else ""
         print(f"{i}. {chat['title']}{forum_indicator}")
     
-    # Ask for confirmation
     confirmation = input("\n❓ Continuar com estes chats? (s/N): ").lower().strip()
     
     if confirmation in ['s', 'sim', 'y', 'yes']:
@@ -140,6 +344,44 @@ async def interactive_chat_selection(chat_list: List[Dict]) -> List[Dict]:
     else:
         print("❌ Operação cancelada pelo usuário")
         return []
+
+
+def parse_selection_input(selection: str, max_count: int) -> List[int]:
+    """
+    Parse user selection input like '1,3-5,8' into list of indices
+    
+    Args:
+        selection: User input string
+        max_count: Maximum valid number
+        
+    Returns:
+        List of selected indices
+    """
+    indices = set()
+    
+    for part in selection.split(','):
+        part = part.strip()
+        
+        if '-' in part:
+            # Range like '3-5'
+            try:
+                start, end = map(int, part.split('-'))
+                if start < 1 or end > max_count or start > end:
+                    raise ValueError(f"Intervalo inválido: {part}")
+                indices.update(range(start, end + 1))
+            except ValueError:
+                raise ValueError(f"Formato de intervalo inválido: {part}")
+        else:
+            # Single number
+            try:
+                num = int(part)
+                if num < 1 or num > max_count:
+                    raise ValueError(f"Número fora do intervalo: {num}")
+                indices.add(num)
+            except ValueError:
+                raise ValueError(f"Número inválido: {part}")
+    
+    return sorted(list(indices))
 
 
 async def main():

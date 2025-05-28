@@ -340,24 +340,8 @@ async def export_all_chats_media(client: TelegramClient, chat_list: List[Dict],
         print(f"   ID: {chat_info['id']} | Tipo: {chat_info['type']}")
         
         try:
-            # Multiple attempts to get entity
-            entity = None
-            
-            # Attempt 1: By username
-            if chat_info.get('username'):
-                try:
-                    entity = await client.get_entity(chat_info['username'])
-                    print(f"✅ Acesso via username: @{chat_info['username']}")
-                except Exception as e:
-                    print(f"⚠️ Falha no acesso via username: {e}")
-            
-            # Attempt 2: By ID
-            if not entity:
-                try:
-                    entity = await client.get_entity(chat_info['id'])
-                    print(f"✅ Acesso via ID: {chat_info['id']}")
-                except Exception as e:
-                    print(f"⚠️ Falha no acesso via ID: {e}")
+            # Get entity using improved resolution
+            entity = await get_chat_entity_safe(client, chat_info)
             
             if not entity:
                 print(f"❌ Não foi possível acessar o chat: {chat_info['title']}")
@@ -403,22 +387,67 @@ async def get_chat_entity_safe(client: TelegramClient, chat_info: Dict):
         Chat entity or None if failed
     """
     entity = None
+    chat_title = chat_info.get('title', 'Unknown')
     
-    # Try username first
+    print(f"🔍 Tentando acessar chat: {chat_title}")
+    
+    # Method 1: Try username first (most reliable for public chats)
     if chat_info.get('username'):
         try:
+            print(f"   📝 Tentativa 1: Username @{chat_info['username']}")
             entity = await client.get_entity(chat_info['username'])
-        except:
-            pass
+            print(f"   ✅ Sucesso via username")
+            return entity
+        except Exception as e:
+            print(f"   ❌ Falha via username: {e}")
     
-    # Try by ID
-    if not entity:
+    # Method 2: Try by ID
+    if chat_info.get('id') and chat_info['id'] != 0:
         try:
+            print(f"   🆔 Tentativa 2: ID {chat_info['id']}")
             entity = await client.get_entity(chat_info['id'])
-        except:
-            pass
+            print(f"   ✅ Sucesso via ID")
+            return entity
+        except Exception as e:
+            print(f"   ❌ Falha via ID: {e}")
     
-    return entity
+    # Method 3: Try with access_hash if available
+    if chat_info.get('access_hash'):
+        try:
+            print(f"   🔑 Tentativa 3: ID + access_hash")
+            from telethon.tl.types import PeerChannel, PeerChat, PeerUser
+            
+            chat_id = chat_info['id']
+            if chat_id < 0:
+                if str(chat_id).startswith('-100'):
+                    # Channel/Supergroup
+                    peer = PeerChannel(int(str(chat_id)[4:]))
+                else:
+                    # Legacy group
+                    peer = PeerChat(-chat_id)
+            else:
+                # User
+                peer = PeerUser(chat_id)
+            
+            entity = await client.get_entity(peer)
+            print(f"   ✅ Sucesso via access_hash")
+            return entity
+        except Exception as e:
+            print(f"   ❌ Falha via access_hash: {e}")
+    
+    # Method 4: Try resolving username without @ prefix
+    if chat_info.get('username'):
+        try:
+            username_clean = chat_info['username'].lstrip('@')
+            print(f"   📝 Tentativa 4: Username limpo '{username_clean}'")
+            entity = await client.get_entity(username_clean)
+            print(f"   ✅ Sucesso via username limpo")
+            return entity
+        except Exception as e:
+            print(f"   ❌ Falha via username limpo: {e}")
+    
+    print(f"   ❌ Todas as tentativas falharam para: {chat_title}")
+    return None
 
 
 async def validate_chat_access(client: TelegramClient, entity) -> bool:
