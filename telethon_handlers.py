@@ -249,10 +249,12 @@ async def export_media_organized(client: TelegramClient, chat_entity,
     # Process messages with progress bar
     print("🔄 Processando mensagens...")
     
-    async for message in tqdm(client.iter_messages(chat_entity, limit=limit), 
-                             desc="Analisando mensagens", 
-                             unit="msg"):
+    # Initialize progress bar manually for async iteration
+    pbar = tqdm(total=limit, desc="Analisando mensagens", unit="msg")
+    
+    async for message in client.iter_messages(chat_entity, limit=limit):
         processed_count += 1
+        pbar.update(1)
         
         # Skip messages without media
         if message.media is None:
@@ -300,6 +302,9 @@ async def export_media_organized(client: TelegramClient, chat_entity,
         except Exception as e:
             print(f"❌ Erro ao baixar mídia da mensagem {message.id}: {e}")
             continue
+    
+    # Close progress bar
+    pbar.close()
     
     # Final report
     print(f"\n✅ Download concluído!")
