@@ -1,6 +1,7 @@
-modules = ["python-3.11"]
+modules = ["python-3.11", "python-base-3.11", "qbasic"]
 [nix]
 channel = "stable-24_05"
+packages = ["openssl"]
 
 [workflows]
 runButton = "Run Telegram Downloader"
