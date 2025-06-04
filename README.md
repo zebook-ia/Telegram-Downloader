@@ -300,6 +300,23 @@ telegram-media-downloader/
 └── 📦 requirements.txt          # Dependências
 ```
 
+## 🖥️ API e Docker
+
+O projeto pode ser executado como uma API HTTP utilizando **FastAPI**.
+Um arquivo `Dockerfile` e um `docker-compose.yml` já estão disponíveis para
+facilitar a implantação em ambientes com Traefik.
+
+1. Construa e inicie o container:
+
+```bash
+docker compose up -d
+```
+
+2. A API ficará acessível em `https://telegram.zebook.tech` quando a regra do
+Traefik estiver ativa.
+
+Os endpoints estão documentados em [`docs/API_ENDPOINTS.md`](docs/API_ENDPOINTS.md).
+
 ## 🚀 Roadmap
 
 ### 📅 Fase 2 - Recursos Avançados
