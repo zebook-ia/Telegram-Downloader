@@ -1,0 +1,18 @@
+version: '3'
+services:
+  telegram-downloader:
+    build: .
+    container_name: telegram_downloader
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tgdownloader.rule=Host(`telegram.zebook.tech`)"
+      - "traefik.http.routers.tgdownloader.entrypoints=websecure"
+      - "traefik.http.routers.tgdownloader.tls.certresolver=myresolver"
+    volumes:
+      - ./exports:/app/exports
+    networks:
+      - web
+networks:
+  web:
+    external: true
