@@ -84,14 +84,23 @@ cd telegram-media-downloader
 pip install -r requirements.txt
 
 # Configurar credenciais
-# Edite config.py com seus valores:
-API_ID = 12345  # Seu API ID
-API_HASH = 'sua_api_hash_aqui'  # Seu API Hash
+# Copie o arquivo `.env.example` para `.env` e edite com seus valores:
+cp .env.example .env
+API_ID=12345
+API_HASH='sua_api_hash_aqui'
 ```
 
 ### 3️⃣ Executar
 ```bash
 python telegram_downloader.py
+```
+
+### Quickstart (English)
+
+```bash
+cp .env.example .env  # configure your Telegram API credentials
+pip install -r requirements.txt
+python telegram_downloader.py --limit 500
 ```
 
 ## 📖 Guia de Uso
@@ -244,9 +253,9 @@ SUPPORTED_MEDIA_TYPES = [
 
 **Solução**:
 ```python
-# Verifique config.py
-API_ID = 12345  # Deve ser um número
-API_HASH = 'hash_correto'  # String válida do Telegram
+# Verifique o arquivo `.env`
+API_ID=12345  # Deve ser um número
+API_HASH='hash_correto'  # String válida do Telegram
 ```
 </details>
 
