@@ -6,6 +6,7 @@ chat listing, media downloading, and forum topic handling
 
 import asyncio
 import json
+import logging
 import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
@@ -27,6 +28,8 @@ from file_utils import (
     format_file_size,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def generate_qr_code(token: str) -> None:
     """Generate and display QR code in terminal"""
@@ -38,7 +41,7 @@ def generate_qr_code(token: str) -> None:
 
 def display_url_as_qr(url: str) -> None:
     """Display URL and QR code in terminal"""
-    print(f"URL do QR Code: {url}")
+    logger.info("URL do QR Code: %s", url)
     generate_qr_code(url)
 
 
@@ -49,7 +52,7 @@ async def login_with_qr() -> TelegramClient:
     Returns:
         Authenticated Telegram client
     """
-    print("=== INICIANDO LOGIN VIA QR CODE ===")
+    logger.info("=== INICIANDO LOGIN VIA QR CODE ===")
 
     client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
 
@@ -58,52 +61,51 @@ async def login_with_qr() -> TelegramClient:
 
     # Check if already authenticated
     if await client.is_user_authorized():
-        print("✅ Sessão existente encontrada - Login automático realizado!")
+        logger.info("Sessão existente encontrada - Login automático realizado!")
         return client
 
-    print("🔐 Iniciando processo de autenticação via QR Code...")
+    logger.info("Iniciando processo de autenticação via QR Code...")
     qr_login = await client.qr_login()
-    print("📱 Cliente conectado:", client.is_connected())
+    logger.info("Cliente conectado: %s", client.is_connected())
 
     authenticated = False
     attempt = 1
 
     while not authenticated:
-        print(f"\n--- Tentativa {attempt} ---")
+        logger.info("Tentativa %s", attempt)
         display_url_as_qr(qr_login.url)
-        print("📱 Escaneie o QR Code com seu Telegram...")
-        print("⏱️  Aguardando 30 segundos...")
+        logger.info("Escaneie o QR Code com seu Telegram e aguarde 30 segundos...")
 
         try:
-            authenticated = await qr_login.wait(30)  # 30 second timeout
+            authenticated = await qr_login.wait(30)
             if authenticated:
-                print("✅ Login realizado com sucesso!")
+                logger.info("Login realizado com sucesso!")
 
         except TimeoutError:
-            print("⏰ QR Code expirou, gerando novo...")
+            logger.warning("QR Code expirou, gerando novo...")
             await qr_login.recreate()
             attempt += 1
 
         except Exception as e:
             error_str = str(e)
             if "SessionPasswordNeededError" in error_str:
-                print("🔐 Autenticação 2FA necessária")
+                logger.info("Autenticação 2FA necessária")
                 password = input("Digite sua senha 2FA: ")
                 try:
                     await client.sign_in(password=password)
                     authenticated = True
-                    print("✅ Login com 2FA realizado com sucesso!")
+                    logger.info("Login com 2FA realizado com sucesso!")
                 except Exception as auth_error:
-                    print(f"❌ Erro na autenticação 2FA: {auth_error}")
+                    logger.error("Erro na autenticação 2FA: %s", auth_error)
                     return None
             else:
-                print(f"❌ Erro durante login: {e}")
+                logger.error("Erro durante login: %s", e)
                 attempt += 1
                 if attempt > 5:
-                    print("❌ Muitas tentativas falhas. Encerrando...")
+                    logger.error("Muitas tentativas falhas. Encerrando...")
                     return None
 
-    print("🎉 Autenticação concluída com sucesso!")
+    logger.info("Autenticação concluída com sucesso!")
     return client
 
 

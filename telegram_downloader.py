@@ -6,12 +6,35 @@ This is the main entry point that orchestrates the entire download process
 following the MVP specifications from the PRD.
 """
 
+import argparse
 import asyncio
 import sys
 from typing import List, Dict
 
-from config import DEFAULT_LIMIT_PER_CHAT
-from telethon_handlers import login_with_qr, export_chat_list, export_all_chats_media
+from config import DEFAULT_LIMIT_PER_CHAT, EXPORTS_DIR
+from telethon_handlers import (
+    login_with_qr,
+    export_chat_list,
+    export_all_chats_media,
+)
+
+
+def parse_args() -> argparse.Namespace:
+    """Parse command line arguments."""
+
+    parser = argparse.ArgumentParser(description="Telegram Media Downloader")
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=DEFAULT_LIMIT_PER_CHAT,
+        help="Message limit per chat",
+    )
+    parser.add_argument(
+        "--output-dir",
+        default=EXPORTS_DIR,
+        help="Directory to store downloaded files",
+    )
+    return parser.parse_args()
 
 
 def print_banner():
@@ -407,7 +430,7 @@ def parse_selection_input(selection: str, max_count: int) -> List[int]:
     return sorted(list(indices))
 
 
-async def main():
+async def main(limit_per_chat: int = DEFAULT_LIMIT_PER_CHAT):
     """
     Main application function that orchestrates the entire process:
     1. QR Code Login
@@ -448,10 +471,10 @@ async def main():
 
         # Step 5: Media download
         print("\n📥 ETAPA 4: DOWNLOAD DE MÍDIAS")
-        print(f"🎯 Limite de mensagens por chat: {DEFAULT_LIMIT_PER_CHAT}")
+        print(f"🎯 Limite de mensagens por chat: {limit_per_chat}")
 
         successful, failed = await export_all_chats_media(
-            client, selected_chats, DEFAULT_LIMIT_PER_CHAT
+            client, selected_chats, limit_per_chat
         )
 
         # Final report
@@ -504,6 +527,17 @@ def check_configuration():
 if __name__ == "__main__":
     print("🚀 Iniciando Telegram Media Downloader...")
 
+    args = parse_args()
+
+    # Update dynamic configuration
+    if args.output_dir != EXPORTS_DIR:
+        import config
+        import telethon_handlers as th
+
+        config.EXPORTS_DIR = args.output_dir
+        config.settings.EXPORTS_DIR = args.output_dir
+        th.EXPORTS_DIR = args.output_dir
+
     # Check configuration first
     if not check_configuration():
         sys.exit(1)
@@ -518,9 +552,8 @@ if __name__ == "__main__":
         print("❌ Operação cancelada pelo usuário")
         sys.exit(0)
 
-    # Run the main application
     try:
-        asyncio.run(main())
+        asyncio.run(main(args.limit))
     except KeyboardInterrupt:
         print("\n❌ Aplicação interrompida pelo usuário")
     except Exception as e:
