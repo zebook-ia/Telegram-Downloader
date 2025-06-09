@@ -163,8 +163,8 @@ exports/
 ```python
 # 📊 Limites e Performance
 DEFAULT_LIMIT_PER_CHAT = 1000        # Mensagens por chat
-MAX_FILE_SIZE = 1024 * 1024 * 1024   # Limite: 1GB por arquivo
-CONCURRENT_DOWNLOADS = 1              # Downloads simultâneos
+MAX_FILE_SIZE = 1024 * 1024 * 1024   # Limite: 1GB por arquivo (acima disso será ignorado)
+CONCURRENT_DOWNLOADS = 1              # Downloads simultâneos (usando semáforo)
 
 # 📱 Tipos de mídia suportados
 SUPPORTED_MEDIA_TYPES = [
@@ -231,7 +231,7 @@ SUPPORTED_MEDIA_TYPES = [
 | Limitação | Impacto | Solução |
 |-----------|---------|---------|
 | Rate limits do Telegram | Delays automáticos | Aguarda tempo especificado |
-| Arquivos muito grandes | Download lento | Configurable em `MAX_FILE_SIZE` |
+| Arquivos muito grandes | Ignorados acima do limite | Configurável em `MAX_FILE_SIZE` |
 | Chats privados restritos | Alguns inacessíveis | Múltiplas tentativas automáticas |
 | Espaço em disco | Pode esgotar | Monitore espaço disponível |
 
