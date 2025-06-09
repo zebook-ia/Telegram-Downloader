@@ -92,7 +92,7 @@ O **Telegram Media Downloader** é uma ferramenta automatizada desenvolvida em P
 
 #### `login_with_qr()` - Autenticação
 ```python
-async def login_with_qr() -> TelegramClient
+async def login_with_qr(max_attempts: int = 5) -> Optional[TelegramClient]
 ```
 **Funcionalidade**: Realiza login via QR Code com suporte a 2FA
 **Retorna**: Cliente Telegram autenticado

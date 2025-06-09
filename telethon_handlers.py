@@ -42,12 +42,14 @@ def display_url_as_qr(url: str) -> None:
     generate_qr_code(url)
 
 
-async def login_with_qr() -> TelegramClient:
+async def login_with_qr(max_attempts: int = 5) -> Optional[TelegramClient]:
     """
     Perform QR code login with error handling
+    Args:
+        max_attempts: Number of tries before giving up
 
     Returns:
-        Authenticated Telegram client
+        Authenticated Telegram client or None if failed
     """
     print("=== INICIANDO LOGIN VIA QR CODE ===")
 
@@ -68,8 +70,8 @@ async def login_with_qr() -> TelegramClient:
     authenticated = False
     attempt = 1
 
-    while not authenticated:
-        print(f"\n--- Tentativa {attempt} ---")
+    while not authenticated and attempt <= max_attempts:
+        print(f"\n--- Tentativa {attempt}/{max_attempts} ---")
         display_url_as_qr(qr_login.url)
         print("📱 Escaneie o QR Code com seu Telegram...")
         print("⏱️  Aguardando 30 segundos...")
@@ -82,8 +84,7 @@ async def login_with_qr() -> TelegramClient:
         except TimeoutError:
             print("⏰ QR Code expirou, gerando novo...")
             await qr_login.recreate()
-            attempt += 1
-
+        
         except Exception as e:
             error_str = str(e)
             if "SessionPasswordNeededError" in error_str:
@@ -98,10 +99,13 @@ async def login_with_qr() -> TelegramClient:
                     return None
             else:
                 print(f"❌ Erro durante login: {e}")
-                attempt += 1
-                if attempt > 5:
-                    print("❌ Muitas tentativas falhas. Encerrando...")
-                    return None
+
+        if not authenticated:
+            attempt += 1
+
+    if not authenticated:
+        print(f"❌ QR Code não escaneado após {max_attempts} tentativas.")
+        return None
 
     print("🎉 Autenticação concluída com sucesso!")
     return client

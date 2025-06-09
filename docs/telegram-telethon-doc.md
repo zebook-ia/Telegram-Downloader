@@ -64,7 +64,7 @@ def display_url_as_qr(url):
     print(f"URL do QR Code: {url}")
     gen_qr(url)
 
-async def login_with_qr():
+async def login_with_qr(max_attempts: int = 5):
     """
     Realiza login via QR Code com tratamento de erros
     Retorna cliente autenticado
@@ -78,7 +78,8 @@ async def login_with_qr():
     print("Cliente conectado:", client.is_connected())
     
     authenticated = False
-    while not authenticated:
+    attempt = 1
+    while not authenticated and attempt <= max_attempts:
         display_url_as_qr(qr_login.url)
         print("Escaneie o QR Code com seu Telegram...")
         
@@ -87,12 +88,20 @@ async def login_with_qr():
         except TimeoutError:
             print("QR Code expirou, gerando novo...")
             await qr_login.recreate()
+            attempt += 1
         except Exception as e:
             if "SessionPasswordNeededError" in str(e):
                 password = input("Digite sua senha 2FA: ")
                 await client.sign_in(password=password)
                 authenticated = True
-    
+            else:
+                print(f"Erro durante login: {e}")
+                attempt += 1
+
+    if not authenticated:
+        print("Falha no login por QR Code")
+        return None
+
     print("Login realizado com sucesso!")
     return client
 ```
