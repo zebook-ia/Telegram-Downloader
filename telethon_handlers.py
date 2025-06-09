@@ -261,61 +261,67 @@ async def export_media_organized(
     # Initialize progress bar manually for async iteration
     pbar = tqdm(total=limit, desc="Analisando mensagens", unit="msg")
 
-    async for message in client.iter_messages(chat_entity, limit=limit):
-        processed_count += 1
-        pbar.update(1)
+    with open(log_file, "a", encoding="utf-8") as log_handle:
+        async for message in client.iter_messages(chat_entity, limit=limit):
+            processed_count += 1
+            pbar.update(1)
 
-        # Skip messages without media
-        if message.media is None:
-            continue
+            # Skip messages without media
+            if message.media is None:
+                continue
 
-        try:
-            # Determine message topic (if applicable)
-            topic_id = None
-            topic_name = None
-            current_dirs = main_media_dirs
+            try:
+                # Determine message topic (if applicable)
+                topic_id = None
+                topic_name = None
+                current_dirs = main_media_dirs
 
-            if (
-                is_forum
-                and hasattr(message, "reply_to")
-                and message.reply_to
-                and hasattr(message.reply_to, "reply_to_top_id")
-            ):
+                if (
+                    is_forum
+                    and hasattr(message, "reply_to")
+                    and message.reply_to
+                    and hasattr(message.reply_to, "reply_to_top_id")
+                ):
 
-                top_msg_id = message.reply_to.reply_to_top_id
-                if top_msg_id in topics:
-                    topic_id = top_msg_id
-                    topic_name = topics[top_msg_id]
-                    current_dirs = topic_media_dirs.get(top_msg_id, main_media_dirs)
+                    top_msg_id = message.reply_to.reply_to_top_id
+                    if top_msg_id in topics:
+                        topic_id = top_msg_id
+                        topic_name = topics[top_msg_id]
+                        current_dirs = topic_media_dirs.get(top_msg_id, main_media_dirs)
 
-                    # Initialize topic counter
-                    if topic_name not in topic_counts:
-                        topic_counts[topic_name] = 0
+                        # Initialize topic counter
+                        if topic_name not in topic_counts:
+                            topic_counts[topic_name] = 0
 
-            # Determine media type and target directory
-            media_type = get_media_type_name(message)
-            target_dir = current_dirs.get(media_type, current_dirs["other"])
+                # Determine media type and target directory
+                media_type = get_media_type_name(message)
+                target_dir = current_dirs.get(media_type, current_dirs["other"])
 
-            # Generate filename
-            filename = generate_filename(message, topic_name)
-            filepath = os.path.join(target_dir, filename)
+                # Generate filename
+                filename = generate_filename(message, topic_name)
+                filepath = os.path.join(target_dir, filename)
 
-            # Download the file
-            print(f"📥 Baixando: {filename}")
-            await client.download_media(message, file=filepath)
+                # Download the file
+                print(f"📥 Baixando: {filename}")
+                await client.download_media(message, file=filepath)
 
-            # Log the operation
-            write_download_log(
-                log_file, filename, media_type, message.id, message.date, topic_name
-            )
+                # Log the operation
+                write_download_log(
+                    log_handle,
+                    filename,
+                    media_type,
+                    message.id,
+                    message.date,
+                    topic_name,
+                )
 
-            downloaded_count += 1
-            if topic_name:
-                topic_counts[topic_name] += 1
+                downloaded_count += 1
+                if topic_name:
+                    topic_counts[topic_name] += 1
 
-        except Exception as e:
-            print(f"❌ Erro ao baixar mídia da mensagem {message.id}: {e}")
-            continue
+            except Exception as e:
+                print(f"❌ Erro ao baixar mídia da mensagem {message.id}: {e}")
+                continue
 
     # Close progress bar
     pbar.close()

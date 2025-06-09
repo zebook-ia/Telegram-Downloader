@@ -193,7 +193,7 @@ def generate_filename(message, topic_name: str = None) -> str
 
 #### `write_download_log()` - Logging
 ```python
-def write_download_log(log_file_path: str, filename: str, media_type: str, message_id: int, message_date, topic_name: str = None)
+def write_download_log(log_file, filename: str, media_type: str, message_id: int, message_date, topic_name: str = None)
 ```
 **Funcionalidade**: Registra operações de download
 **Formato do Log**: `timestamp: filename - media_type - Msg ID: id - Data: date - Tópico: topic`
