@@ -158,7 +158,7 @@ def generate_filename(message, topic_name: str = None) -> str:
 
 
 def write_download_log(
-    log_file_path: str,
+    log_file,
     filename: str,
     media_type: str,
     message_id: int,
@@ -169,7 +169,7 @@ def write_download_log(
     Write download operation to log file
 
     Args:
-        log_file_path: Path to the log file
+        log_file: Open file handle to append log entries
         filename: Downloaded filename
         media_type: Type of media downloaded
         message_id: Telegram message ID
@@ -184,8 +184,7 @@ def write_download_log(
         f"Msg ID: {message_id} - Data: {message_date}{topic_info}\n"
     )
 
-    with open(log_file_path, "a", encoding="utf-8") as log:
-        log.write(log_entry)
+    log_file.write(log_entry)
 
 
 def format_file_size(size_bytes: int) -> str:
