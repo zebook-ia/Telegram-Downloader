@@ -194,6 +194,10 @@ async def select_by_chat_id(chat_list: List[Dict]) -> List[Dict]:
     print(f"\n🆔 SELEÇÃO POR ID DO CHAT")
     print("💡 Você pode inserir um ou múltiplos IDs separados por vírgula")
 
+    # Build a quick lookup dictionary to avoid repeatedly iterating
+    # over the entire chat list for every ID typed by the user
+    chat_lookup = {chat["id"]: chat for chat in chat_list}
+
     while True:
         ids_input = input(
             "\n❓ Digite o(s) ID(s) do(s) chat(s) (ou 'c' para cancelar): "
@@ -209,14 +213,10 @@ async def select_by_chat_id(chat_list: List[Dict]) -> List[Dict]:
                 chat_id = int(id_str.strip())
                 chat_ids.append(chat_id)
 
-            # Find chats by ID
+            # Find chats by ID using the lookup dictionary
             selected_chats = []
             for chat_id in chat_ids:
-                found_chat = None
-                for chat in chat_list:
-                    if chat["id"] == chat_id:
-                        found_chat = chat
-                        break
+                found_chat = chat_lookup.get(chat_id)
 
                 if found_chat:
                     selected_chats.append(found_chat)
