@@ -209,8 +209,8 @@ API_HASH = '0123456789abcdef0123456789abcdef'  # Seu API Hash
 #### Parâmetros de Download
 ```python
 DEFAULT_LIMIT_PER_CHAT = 1000  # Mensagens por chat
-MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1GB limite
-CONCURRENT_DOWNLOADS = 1  # Downloads simultâneos
+MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1GB limite (arquivos maiores são ignorados)
+CONCURRENT_DOWNLOADS = 1  # Downloads simultâneos controlados por semáforo
 ```
 
 #### Mapeamento de Diretórios
@@ -461,8 +461,8 @@ entity = await client.get_entity(peer)
 ```python
 # config.py
 DEFAULT_LIMIT_PER_CHAT = 1000        # Mensagens por chat
-MAX_FILE_SIZE = 1024 * 1024 * 1024   # 1GB limite
-CONCURRENT_DOWNLOADS = 1              # Downloads simultâneos
+MAX_FILE_SIZE = 1024 * 1024 * 1024   # 1GB limite (acima disso é pulado)
+CONCURRENT_DOWNLOADS = 1              # Downloads simultâneos via Semaphore
 ```
 
 #### Seleção de Tipos de Mídia
@@ -493,12 +493,8 @@ async for message in client.iter_messages(chat_entity, offset_date=start_date):
 ```
 
 #### Por Tamanho de Arquivo
-```python
-# Verificar tamanho antes do download
-if hasattr(message.document, 'size') and message.document.size > MAX_FILE_SIZE:
-    print(f"Arquivo muito grande: {message.document.size} bytes")
-    continue
-```
+O verificador de tamanho agora é padrão. Arquivos com tamanho acima de
+`MAX_FILE_SIZE` são automaticamente ignorados durante o download.
 
 ---
 

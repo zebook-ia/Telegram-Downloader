@@ -16,7 +16,14 @@ from telethon.tl.types import Channel, InputPeerEmpty
 from qrcode import QRCode
 from tqdm import tqdm
 
-from config import API_ID, API_HASH, SESSION_NAME, EXPORTS_DIR
+from config import (
+    API_ID,
+    API_HASH,
+    SESSION_NAME,
+    EXPORTS_DIR,
+    MAX_FILE_SIZE,
+    CONCURRENT_DOWNLOADS,
+)
 from file_utils import (
     sanitize_filename,
     create_media_directories,
@@ -255,6 +262,10 @@ async def export_media_organized(
     topic_counts = {}
     processed_count = 0
 
+    # Semaphore for concurrent downloads
+    semaphore = asyncio.Semaphore(CONCURRENT_DOWNLOADS)
+    download_tasks = []
+
     print(f"📁 Estrutura de diretórios criada em: {base_dir}")
     if is_forum:
         print(f"📂 Grupo com tópicos detectado - {len(topics)} tópicos organizados")
@@ -304,25 +315,50 @@ async def export_media_organized(
             filename = generate_filename(message, topic_name)
             filepath = os.path.join(target_dir, filename)
 
-            # Download the file
-            print(f"📥 Baixando: {filename}")
-            await client.download_media(message, file=filepath)
+            # Skip if document size exceeds limit
+            if (
+                hasattr(message, "document")
+                and hasattr(message.document, "size")
+                and message.document.size
+                and message.document.size > MAX_FILE_SIZE
+            ):
+                size_str = format_file_size(message.document.size)
+                print(
+                    f"⚠️ Tamanho excede o limite ({size_str}). Pulando {filename}"
+                )
+                continue
 
-            # Log the operation
-            write_download_log(
-                log_file, filename, media_type, message.id, message.date, topic_name
-            )
+            async def download_and_log():
+                async with semaphore:
+                    print(f"📥 Baixando: {filename}")
+                    await client.download_media(message, file=filepath)
+                write_download_log(
+                    log_file,
+                    filename,
+                    media_type,
+                    message.id,
+                    message.date,
+                    topic_name,
+                )
+                return topic_name
 
-            downloaded_count += 1
-            if topic_name:
-                topic_counts[topic_name] += 1
+            download_tasks.append(asyncio.create_task(download_and_log()))
 
         except Exception as e:
             print(f"❌ Erro ao baixar mídia da mensagem {message.id}: {e}")
             continue
 
-    # Close progress bar
+    # Close progress bar and wait for downloads
     pbar.close()
+
+    results = await asyncio.gather(*download_tasks, return_exceptions=True)
+    for res in results:
+        if isinstance(res, Exception):
+            print(f"❌ Erro em tarefa de download: {res}")
+            continue
+        downloaded_count += 1
+        if res:
+            topic_counts[res] += 1
 
     # Final report
     print(f"\n✅ Download concluído!")
